@@ -82,3 +82,33 @@ Resources:
      Properties:
        DomainName: evenson-resume.com
        ValidationMethod: DNS
+
+  MyDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: resume-app-tbl
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: "ID"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "ID"
+          KeyType: "HASH"
+
+  MyLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: resume-app-tbl
+      CodeUri: aws-cloud-resume/scripts/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Architectures:
+        - x86_64
+      Events:
+        Visits:
+          Type: Api
+          Properties:
+            Path: /visit
+            Method: post
