@@ -9,20 +9,20 @@ Description: >
 Globals:
   Function:
     Timeout: 3
-    MemorySize: 128
 
 Resources:
   MyWebsite:
     Type: AWS::S3::Bucket
     Properties:
-      WebsiteConfiguration:
-        IndexDocument: index.html
-      BucketName: cloud-resume-evenson
       PublicAccessBlockConfiguration:
         BlockPublicAcls: false
         BlockPublicPolicy: false
         IgnorePublicAcls: false
         RestrictPublicBuckets: false
+      WebsiteConfiguration:
+        IndexDocument: index.html
+      BucketName: cloud-resume-evenson
+
   BucketPolicy:
    Type: AWS::S3::BucketPolicy
    Properties:
@@ -41,31 +41,44 @@ Resources:
                - /*
      Bucket: !Ref MyWebsite
 
-  HelloWorldFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: hello_world/
-      Handler: app.lambda_handler
-      Runtime: python3.8
-      Architectures:
-        - x86_64
-      Events:
-        HelloWorld:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /hello
-            Method: get
+  MyDistribution:
+   Type: "AWS::CloudFront::Distribution"
+   Properties:
+     DistributionConfig:
+      ViewerCertificate:
+        AcmCertificateArn: !Ref MyCertificate
+        SslSupportMethod: sni-only
+      Aliases:
+        - evenson-resume.com
+      DefaultCacheBehavior:
+        ViewerProtocolPolicy: allow-all
+        TargetOriginId: cloud-resume-evenson.s3-website-us-east-1.amazonaws.com
+        DefaultTTL: 0
+        MinTTL: 0
+        MaxTTL: 0
+        ForwardedValues:
+          QueryString: false
+      Origins:
+        - DomainName: cloud-resume-evenson.s3-website-us-east-1.amazonaws.com
+          Id: cloud-resume-evenson.s3-website-us-east-1.amazonaws.com
+          CustomOriginConfig:
+            OriginProtocolPolicy: http-only
+      Enabled: "true"
+      DefaultRootObject: index.html
+    
+  MyRoute53Record:
+   Type: "AWS::Route53::RecordSetGroup"
+   Properties:
+     HostedZoneId: Z065832034SDJFEWARRV7
+     RecordSets:
+       - Name: evenson-resume.com
+         Type: A
+         AliasTarget:
+           HostedZoneId: Z2FDTNDATAQYW2
+           DNSName: !GetAtt MyDistribution.DomainName
 
-Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  MyCertificate:
+     Type: AWS::CertificateManager::Certificate
+     Properties:
+       DomainName: evenson-resume.com
+       ValidationMethod: DNS
