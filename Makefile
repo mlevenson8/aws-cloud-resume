@@ -1,7 +1,7 @@
 .PHONY: build
 
 build:
-	sam build --use-container
+	sam build
 
 deploy-infra:
 	sam build && aws-vault exec my-user --no-session -- sam deploy
