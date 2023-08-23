@@ -34,7 +34,7 @@ jobs:
           aws-region: us-east-1
       - run: sam build --use-container
         working-directory: .
-      - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name cloud-resume-stack --s3-bucket cloud-resume-evenson --capabilities CAPABILITY_IAM
+      - run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset --stack-name cloud-resume-stack --s3-bucket aws-sam-cli-managed-default-samclisourcebucket-y0k3uoxmnbn6 --capabilities CAPABILITY_IAM
         working-directory: .
 
   deploy-site:
