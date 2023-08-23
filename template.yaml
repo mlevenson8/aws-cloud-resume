@@ -24,64 +24,64 @@ Resources:
       BucketName: cloud-resume-evenson
 
   BucketPolicy:
-   Type: AWS::S3::BucketPolicy
-   Properties:
-     PolicyDocument:
-       Id: MyPolicy
-       Version: 2012-10-17
-       Statement:
-         - Sid: PublicReadForGetBucketObjects
-           Effect: Allow
-           Principal: "*"
-           Action: "s3:GetObject"
-           Resource: !Join
-             - ""
-             - - "arn:aws:s3:::"
-               - !Ref MyWebsite
-               - /*
-     Bucket: !Ref MyWebsite
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      PolicyDocument:
+        Id: MyPolicy
+        Version: 2012-10-17
+        Statement:
+          - Sid: PublicReadForGetBucketObjects
+            Effect: Allow
+            Principal: "*"
+            Action: "s3:GetObject"
+            Resource: !Join
+              - ""
+              - - "arn:aws:s3:::"
+                - !Ref MyWebsite
+                - /*
+      Bucket: !Ref MyWebsite
 
   MyDistribution:
-   Type: "AWS::CloudFront::Distribution"
-   Properties:
-     DistributionConfig:
-      ViewerCertificate:
-        AcmCertificateArn: !Ref MyCertificate
-        SslSupportMethod: sni-only
-      Aliases:
-        - evenson-resume.com
-      DefaultCacheBehavior:
-        ViewerProtocolPolicy: allow-all
-        TargetOriginId: cloud-resume-evenson.s3-website-us-east-1.amazonaws.com
-        DefaultTTL: 0
-        MinTTL: 0
-        MaxTTL: 0
-        ForwardedValues:
-          QueryString: false
-      Origins:
-        - DomainName: cloud-resume-evenson.s3-website-us-east-1.amazonaws.com
-          Id: cloud-resume-evenson.s3-website-us-east-1.amazonaws.com
-          CustomOriginConfig:
-            OriginProtocolPolicy: http-only
-      Enabled: "true"
-      DefaultRootObject: index.html
+    Type: "AWS::CloudFront::Distribution"
+    Properties:
+      DistributionConfig:
+        ViewerCertificate:
+          AcmCertificateArn: !Ref MyCertificate
+          SslSupportMethod: sni-only
+        Aliases:
+          - evenson-resume.com
+        DefaultCacheBehavior:
+          ViewerProtocolPolicy: allow-all
+          TargetOriginId: cloud-resume-evenson.s3-website-us-east-1.amazonaws.com
+          DefaultTTL: 0
+          MinTTL: 0
+          MaxTTL: 0
+          ForwardedValues:
+            QueryString: false
+        Origins:
+          - DomainName: cloud-resume-evenson.s3-website-us-east-1.amazonaws.com
+            Id: cloud-resume-evenson.s3-website-us-east-1.amazonaws.com
+            CustomOriginConfig:
+              OriginProtocolPolicy: http-only
+        Enabled: "true"
+        DefaultRootObject: index.html
     
   MyRoute53Record:
-   Type: "AWS::Route53::RecordSetGroup"
-   Properties:
-     HostedZoneId: Z065832034SDJFEWARRV7
-     RecordSets:
-       - Name: evenson-resume.com
-         Type: A
-         AliasTarget:
-           HostedZoneId: Z2FDTNDATAQYW2
-           DNSName: !GetAtt MyDistribution.DomainName
+    Type: "AWS::Route53::RecordSetGroup"
+    Properties:
+      HostedZoneId: Z065832034SDJFEWARRV7
+      RecordSets:
+        - Name: evenson-resume.com
+          Type: A
+          AliasTarget:
+            HostedZoneId: Z2FDTNDATAQYW2
+            DNSName: !GetAtt MyDistribution.DomainName
 
   MyCertificate:
-     Type: AWS::CertificateManager::Certificate
-     Properties:
-       DomainName: evenson-resume.com
-       ValidationMethod: DNS
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: evenson-resume.com
+      ValidationMethod: DNS
 
   MyDynamoDBTable:
     Type: AWS::DynamoDB::Table
@@ -101,7 +101,7 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: resume-app-tbl
-      CodeUri: scripts/
+      CodeUri: aws-cloud-resume/scripts/
       Handler: app.lambda_handler
       Runtime: python3.8
       Architectures:
