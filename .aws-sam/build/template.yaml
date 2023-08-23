@@ -1,15 +1,13 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  cloud-resume
+Description: 'cloud-resume
 
   Sample SAM Template for cloud-resume
 
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+  '
 Globals:
   Function:
     Timeout: 3
-
 Resources:
   MyWebsite:
     Type: AWS::S3::Bucket
@@ -22,35 +20,36 @@ Resources:
       WebsiteConfiguration:
         IndexDocument: index.html
       BucketName: cloud-resume-evenson
-
   BucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
       PolicyDocument:
         Id: MyPolicy
-        Version: 2012-10-17
+        Version: '2012-10-17'
         Statement:
-          - Sid: PublicReadForGetBucketObjects
-            Effect: Allow
-            Principal: "*"
-            Action: "s3:GetObject"
-            Resource: !Join
-              - ""
-              - - "arn:aws:s3:::"
-                - !Ref MyWebsite
-                - /*
-      Bucket: !Ref MyWebsite
-
+        - Sid: PublicReadForGetBucketObjects
+          Effect: Allow
+          Principal: '*'
+          Action: s3:GetObject
+          Resource:
+            Fn::Join:
+            - ''
+            - - 'arn:aws:s3:::'
+              - Ref: MyWebsite
+              - /*
+      Bucket:
+        Ref: MyWebsite
   MyDistribution:
-    Type: "AWS::CloudFront::Distribution"
+    Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
         ViewerCertificate:
-          AcmCertificateArn: !Ref MyCertificate
+          AcmCertificateArn:
+            Ref: MyCertificate
           SslSupportMethod: sni-only
         Aliases:
-          - www.evenson-resume.com
-          - evenson-resume.com
+        - www.evenson-resume.com
+        - evenson-resume.com
         DefaultCacheBehavior:
           ViewerProtocolPolicy: allow-all
           TargetOriginId: cloud-resume-evenson.s3-website-us-east-1.amazonaws.com
@@ -60,67 +59,75 @@ Resources:
           ForwardedValues:
             QueryString: false
         Origins:
-          - DomainName: cloud-resume-evenson.s3-website-us-east-1.amazonaws.com
-            Id: cloud-resume-evenson.s3-website-us-east-1.amazonaws.com
-            CustomOriginConfig:
-              OriginProtocolPolicy: http-only
-        Enabled: "true"
+        - DomainName: cloud-resume-evenson.s3-website-us-east-1.amazonaws.com
+          Id: cloud-resume-evenson.s3-website-us-east-1.amazonaws.com
+          CustomOriginConfig:
+            OriginProtocolPolicy: http-only
+        Enabled: 'true'
         DefaultRootObject: index.html
-    
   MyRoute53Record:
-    Type: "AWS::Route53::RecordSetGroup"
+    Type: AWS::Route53::RecordSetGroup
     Properties:
       HostedZoneId: Z065832034SDJFEWARRV7
       RecordSets:
-        - Name: www.evenson-resume.com
-          Type: A
-          AliasTarget:
-            HostedZoneId: Z2FDTNDATAQYW2
-            DNSName: !GetAtt MyDistribution.DomainName
-        - Name: evenson-resume.com
-          Type: A
-          AliasTarget:
-            HostedZoneId: Z2FDTNDATAQYW2
-            DNSName: !GetAtt MyDistribution.DomainName
-
+      - Name: www.evenson-resume.com
+        Type: A
+        AliasTarget:
+          HostedZoneId: Z2FDTNDATAQYW2
+          DNSName:
+            Fn::GetAtt:
+            - MyDistribution
+            - DomainName
+      - Name: evenson-resume.com
+        Type: A
+        AliasTarget:
+          HostedZoneId: Z2FDTNDATAQYW2
+          DNSName:
+            Fn::GetAtt:
+            - MyDistribution
+            - DomainName
   MyCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !Join ["", ["*.", evenson-resume.com]]
+      DomainName:
+        Fn::Join:
+        - ''
+        - - '*.'
+          - evenson-resume.com
       SubjectAlternativeNames:
-        - evenson-resume.com
-        - "*.evenson-resume.com"
+      - evenson-resume.com
+      - '*.evenson-resume.com'
       DomainValidationOptions:
-        - DomainName: evenson-resume.com
-          HostedZoneId: Z065832034SDJFEWARRV7
+      - DomainName: evenson-resume.com
+        HostedZoneId: Z065832034SDJFEWARRV7
       ValidationMethod: DNS
-
   MyDynamoDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: resume-app-tbl
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
-        - AttributeName: "ID"
-          AttributeType: "S"
+      - AttributeName: ID
+        AttributeType: S
       KeySchema:
-        - AttributeName: "ID"
-          KeyType: "HASH"
-
+      - AttributeName: ID
+        KeyType: HASH
   MyLambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
       Policies:
-        - DynamoDBCrudPolicy:
-            TableName: resume-app-tbl
-      CodeUri: resume-site/scripts/
+      - DynamoDBCrudPolicy:
+          TableName: resume-app-tbl
+      CodeUri: MyLambdaFunction
       Handler: app.lambda_handler
       Runtime: python3.8
       Architectures:
-        - x86_64
+      - x86_64
       Events:
         Visits:
           Type: Api
           Properties:
             Path: /visit
             Method: post
+    Metadata:
+      SamResourceId: MyLambdaFunction

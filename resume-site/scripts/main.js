@@ -6,7 +6,7 @@ AOS.init({
 
 // Add your javascript here
 $(document).ready(() => {
-  $.post('https://zfltx34xol.execute-api.us-east-1.amazonaws.com/Prod/visit')
+  $.post('https://qq01wfm9v6.execute-api.us-east-1.amazonaws.com/Prod/visit')
   .done(visitor_counter => {
       $('#loader').hide();
       $('#visits').text(Object.values(visitor_counter));

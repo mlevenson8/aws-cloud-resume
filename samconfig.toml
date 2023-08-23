@@ -1,0 +1,9 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "cloud-resume-stack"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-y0k3uoxmnbn6"
+s3_prefix = "cloud-resume-stack"
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM"
