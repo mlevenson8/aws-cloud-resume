@@ -11,7 +11,7 @@ jobs:
           python-version: 3.8
       - name: Install dependencies
         run: |
-          cd tests
+          cd resume-site/scripts/tests
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Run tests with pytest
@@ -46,4 +46,4 @@ jobs:
           AWS_S3_BUCKET: cloud-resume-evenson
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          SOURCE_DIR: .
+          SOURCE_DIR: resume-site
